@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Switch Supplements | May 2026 Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Base & Theme ── */
+    :root {
+      --brand-primary: #6366f1;
+      --brand-accent:  #22d3ee;
+      --brand-green:   #10b981;
+      --brand-orange:  #f59e0b;
+      --brand-red:     #ef4444;
+      --bg-base:       #0f172a;
+      --bg-card:       #1e293b;
+      --bg-card2:      #263347;
+      --border:        #334155;
+      --text-primary:  #f1f5f9;
+      --text-muted:    #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0; padding: 0;
+    }
+
+    /* ── Sticky Header ── */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(15,23,42,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .site-header .brand { display: flex; align-items: center; gap: 12px; }
+    .site-header .logo {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; color: #fff;
+    }
+    .site-header h1 { font-size: 20px; font-weight: 700; margin: 0; }
+    .site-header .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .period-badge {
+      background: rgba(99,102,241,0.15); border: 1px solid var(--brand-primary);
+      color: var(--brand-primary); padding: 6px 14px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+
+    /* ── Tab Navigation ── */
+    .tab-nav {
+      display: flex; gap: 4px; padding: 20px 32px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-base);
+    }
+    .tab-btn {
+      padding: 10px 22px; border-radius: 8px 8px 0 0;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      border: none; background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      border-bottom: none;
+      position: relative; bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--text-primary); background: var(--bg-card); }
+    .tab-btn.active {
+      color: var(--brand-primary);
+      background: var(--bg-card);
+      border-color: var(--border);
+      border-bottom-color: var(--bg-card);
+    }
+    .tab-icon { margin-right: 6px; }
+
+    /* ── Tab Panels ── */
+    .tab-panel { display: none; padding: 28px 32px 48px; }
+    .tab-panel.active { display: block; }
+
+    /* ── KPI Cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      position: relative; overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .kpi-card.indigo::before  { background: var(--brand-primary); }
+    .kpi-card.cyan::before    { background: var(--brand-accent); }
+    .kpi-card.green::before   { background: var(--brand-green); }
+    .kpi-card.orange::before  { background: var(--brand-orange); }
+    .kpi-card .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 8px; }
+    .kpi-card .kpi-value { font-size: 28px; font-weight: 800; line-height: 1; }
+    .kpi-card .kpi-sub   { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+    .kpi-card.indigo .kpi-value { color: #a5b4fc; }
+    .kpi-card.cyan   .kpi-value { color: #67e8f9; }
+    .kpi-card.green  .kpi-value { color: #6ee7b7; }
+    .kpi-card.orange .kpi-value { color: #fcd34d; }
+
+    /* ── Section Headers ── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 16px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+
+    /* ── Charts Grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 20px; margin-bottom: 28px;
+    }
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+    }
+    .chart-title {
+      font-size: 13px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .chart-canvas-wrap { position: relative; }
+
+    /* ── Tables ── */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .table-toolbar {
+      padding: 16px 20px; display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .search-input {
+      background: var(--bg-base); border: 1px solid var(--border);
+      color: var(--text-primary); padding: 8px 14px;
+      border-radius: 8px; font-size: 13px; outline: none;
+      width: 260px; transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--brand-primary); }
+    .search-input::placeholder { color: var(--text-muted); }
+    .btn-export {
+      background: rgba(99,102,241,0.12); border: 1px solid var(--brand-primary);
+      color: var(--brand-primary); padding: 7px 16px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-export:hover { background: rgba(99,102,241,0.25); }
+    .btn-dl-chart {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text-muted); padding: 4px 10px; border-radius: 6px;
+      font-size: 11px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-dl-chart:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead th {
+      padding: 10px 16px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted); background: var(--bg-card2);
+      text-align: left; cursor: pointer; user-select: none;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table thead th:hover { color: var(--brand-primary); }
+    .data-table tbody tr {
+      border-bottom: 1px solid rgba(51,65,85,0.5);
+      transition: background 0.15s;
+    }
+    .data-table tbody tr:hover { background: var(--bg-card2); }
+    .data-table tbody td { padding: 10px 16px; font-size: 13px; }
+    .data-table tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .data-table tbody td.green { color: #6ee7b7; font-weight: 600; }
+    .data-table tbody td.muted { color: var(--text-muted); }
+    .sort-arrow { margin-left: 4px; opacity: 0.4; }
+    .sort-arrow.active { opacity: 1; color: var(--brand-primary); }
+    .pagination {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-muted);
+    }
+    .pag-btn {
+      background: var(--bg-card2); border: 1px solid var(--border);
+      color: var(--text-primary); padding: 5px 12px; border-radius: 6px;
+      cursor: pointer; font-size: 12px; transition: all 0.2s;
+    }
+    .pag-btn:hover { border-color: var(--brand-primary); }
+    .pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* ── Insights Panel ── */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .insight-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 20px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .insight-icon {
+      font-size: 24px; flex-shrink: 0; margin-top: 2px;
+    }
+    .insight-text { font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+    .insight-text strong { color: var(--text-primary); }
+
+    /* ── Divider label ── */
+    .section-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 28px 0 20px; color: var(--text-muted); font-size: 11px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .section-divider::before, .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Spinner ── */
+    .spinner-wrap {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,0.85); z-index: 999;
+      align-items: center; justify-content: center;
+    }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--brand-primary);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsiveness ── */
+    @media (max-width: 768px) {
+      .site-header { padding: 12px 16px; }
+      .tab-nav { padding: 12px 16px 0; }
+      .tab-panel { padding: 20px 16px 40px; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Spinner -->
+<div class="spinner-wrap" id="spinner">
+  <div class="spinner"></div>
+</div>
+
+<!-- ══════════ HEADER ══════════ -->
+<header class="site-header">
+  <div class="brand">
+    <div class="logo">S</div>
+    <div>
+      <h1>Switch Supplements</h1>
+      <div class="subtitle">Executive Analytics Dashboard</div>
+    </div>
+  </div>
+  <div class="period-badge">📅 May 1 – 31, 2026</div>
+</header>
+
+<!-- ══════════ TAB NAV ══════════ -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="overview">
+    <span class="tab-icon">📊</span>Overview
+  </button>
+  <button class="tab-btn" data-tab="sns">
+    <span class="tab-icon">🔄</span>Subscribe &amp; Save
+  </button>
+  <button class="tab-btn" data-tab="ntb">
+    <span class="tab-icon">🚀</span>NTB Sales
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════════
+     TAB 1 — OVERVIEW
+══════════════════════════════════════ -->
+<div class="tab-panel active" id="tab-overview">
+
+  <!-- SnS KPIs -->
+  <div class="section-divider">Subscribe &amp; Save</div>
+  <div class="kpi-grid" id="kpi-sns"></div>
+
+  <!-- NTB KPIs -->
+  <div class="section-divider">New-to-Brand Advertising</div>
+  <div class="kpi-grid" id="kpi-ntb"></div>
+
+  <!-- Executive Insights -->
+  <div class="section-divider">Executive Insights</div>
+  <div class="insights-grid" id="insights-grid"></div>
+
+  <!-- Mini charts row -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">
+        NTB vs Existing Customer Sales
+        <button class="btn-dl-chart" onclick="downloadChart('chart-overview-donut','ntb_vs_existing')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:260px">
+        <canvas id="chart-overview-donut"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">
+        Top 5 Campaigns by NTB Sales
+        <button class="btn-dl-chart" onclick="downloadChart('chart-overview-bar','top5_ntb')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:260px">
+        <canvas id="chart-overview-bar"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2 — SUBSCRIBE & SAVE
+══════════════════════════════════════ -->
+<div class="tab-panel" id="tab-sns">
+
+  <div class="kpi-grid" id="kpi-sns2"></div>
+
+  <!-- Charts row -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">
+        SnS Sales Penetration %
+        <button class="btn-dl-chart" onclick="downloadChart('chart-sns-pen','sns_penetration')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:200px">
+        <canvas id="chart-sns-pen"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">
+        Subscription Balance
+        <button class="btn-dl-chart" onclick="downloadChart('chart-sns-bal','sns_balance')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:200px">
+        <canvas id="chart-sns-bal"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">
+        OOS Loss Analysis
+        <button class="btn-dl-chart" onclick="downloadChart('chart-sns-oos','sns_oos')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:200px">
+        <canvas id="chart-sns-oos"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">
+        Coupon Contribution
+        <button class="btn-dl-chart" onclick="downloadChart('chart-sns-coupon','sns_coupon')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:200px">
+        <canvas id="chart-sns-coupon"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- SnS Table -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="section-title">
+        <span class="dot" style="background:var(--brand-green)"></span>
+        Product Details
+      </div>
+      <button class="btn-export" onclick="exportCSV('sns-table','switch_sns_may2026')">⬇ Export CSV</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table" id="sns-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('sns-table',0)">ASIN <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',1)">SKU <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',2)">Product Name <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',3)">Brand <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',4)" style="text-align:right">SnS Sales <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',5)" style="text-align:right">Units Shipped <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',6)" style="text-align:right">Sub Balance <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',7)" style="text-align:right">Penetration % <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',8)" style="text-align:right">OOS Loss ($) <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('sns-table',9)" style="text-align:right">OOS Not Del. % <span class="sort-arrow">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="sns-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span id="sns-pag-info"></span>
+      <div style="display:flex;gap:8px">
+        <button class="pag-btn" id="sns-prev" onclick="paginate('sns',-1)">← Prev</button>
+        <button class="pag-btn" id="sns-next" onclick="paginate('sns',1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3 — NTB SALES
+══════════════════════════════════════ -->
+<div class="tab-panel" id="tab-ntb">
+
+  <div class="kpi-grid" id="kpi-ntb2"></div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">
+        Top 10 Campaigns by NTB Sales
+        <button class="btn-dl-chart" onclick="downloadChart('chart-ntb-top','ntb_top10')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:320px">
+        <canvas id="chart-ntb-top"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">
+        NTB Share % by Campaign (Top 10)
+        <button class="btn-dl-chart" onclick="downloadChart('chart-ntb-share','ntb_share')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:320px">
+        <canvas id="chart-ntb-share"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">
+        Ad Sales vs NTB Sales (Top 10)
+        <button class="btn-dl-chart" onclick="downloadChart('chart-ntb-grouped','ntb_grouped')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:320px">
+        <canvas id="chart-ntb-grouped"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">
+        NTB Contribution Breakdown
+        <button class="btn-dl-chart" onclick="downloadChart('chart-ntb-pie','ntb_pie')">⬇ PNG</button>
+      </div>
+      <div class="chart-canvas-wrap" style="height:320px">
+        <canvas id="chart-ntb-pie"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- NTB Table -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="section-title">
+          <span class="dot" style="background:var(--brand-primary)"></span>
+          Campaign Performance
+        </div>
+        <input type="text" class="search-input" id="ntb-search" placeholder="Search campaigns…" oninput="filterNTB()">
+      </div>
+      <button class="btn-export" onclick="exportCSV('ntb-table','switch_ntb_may2026')">⬇ Export CSV</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table" id="ntb-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('ntb-table',0)">Campaign <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('ntb-table',1)" style="text-align:right">Ad Sales <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('ntb-table',2)" style="text-align:right">NTB Sales <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('ntb-table',3)" style="text-align:right">Orders <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('ntb-table',4)" style="text-align:right">NTB Orders <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('ntb-table',5)" style="text-align:right">NTB Units <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('ntb-table',6)" style="text-align:right">NTB Share % <span class="sort-arrow">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="ntb-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span id="ntb-pag-info"></span>
+      <div style="display:flex;gap:8px">
+        <button class="pag-btn" id="ntb-prev" onclick="paginate('ntb',-1)">← Prev</button>
+        <button class="pag-btn" id="ntb-next" onclick="paginate('ntb',1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     EMBEDDED DATA
+══════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════════════════
+// EMBEDDED DATA — parsed from uploaded CSV files
+// SnS = Subscribe & Save report (B0BX4J7Z4S)
+// NTB = New-to-Brand / campaign report (69 campaigns)
+// ═══════════════════════════════════════════════
+const RAW = {"ntb": [{"Campaign name": "SB - Phrase - Harvest - KillSwitch - B0BX4J7Z4S - May 2026", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SB -Phrase - kill switch - Product Collection - KillSwitch - B0BX4J7Z4S - Nov 4, 2025", "Sales": 119.9, "Sales (new to brand)": 119.9, "Purchases": 2, "Purchases (new to brand)": 2.0, "Units sold (new to brand)": 2.0, "ntb_share": 100.0}, {"Campaign name": "SP - BMM - SKW (sleep cocoa) - KillSwitch - B0BX4J7Z4S -  17/6/25", "Sales": 119.9, "Sales (new to brand)": 0.0, "Purchases": 2, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - PATA 1 [High sales] - Switch Supplement - B0BX4J7Z4S  - 24/6/25", "Sales": 239.8, "Sales (new to brand)": 179.85, "Purchases": 4, "Purchases (new to brand)": 3.0, "Units sold (new to brand)": 3.0, "ntb_share": 75.0}, {"Campaign name": "SP - SKW Exact (Kill Switch Sleep Aid) - Switch Supplements - B0BX4J7Z4S - Nov 4, 2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - BMM [Sleep Drink KWs] - KillSwitch - B0BX4J7Z4S - 1/8/25", "Sales": 359.7, "Sales (new to brand)": 299.75, "Purchases": 6, "Purchases (new to brand)": 5.0, "Units sold (new to brand)": 5.0, "ntb_share": 83.33}, {"Campaign name": "SP - PATA - 3 - KillSwitch - B0BX4J7Z4S - 8/4/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - PATA 2 [Medium sales] - Switch Supplement - B0BX4J7Z4S - 24/6/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Phrase - Harvest - KillSwitch - B0BX4J7Z4S - May 2026", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - Phrase - [Sleep Drink KWs] - KillSwitch - B0BX4J7Z4S -18/7/25", "Sales": 119.9, "Sales (new to brand)": 119.9, "Purchases": 2, "Purchases (new to brand)": 2.0, "Units sold (new to brand)": 2.0, "ntb_share": 100.0}, {"Campaign name": "SBV - Exact [Beam dream KWs] -Switch Supplement - B0BX4J7Z4S - 28/7/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - BMM [moonbrew KWs] - KillSwitch - B0BX4J7Z4S - 28/7/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - [SD-Purchases] VCPM - KillSwitch - B0BX4J7Z4S - 8/4/25", "Sales": 2574.85, "Sales (new to brand)": 0.0, "Purchases": 44, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Phrase - Catch All - KillSwitch - B0BX4J7Z4S - Old", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV-[PATA-Moonbrew]-Switch Supplements-B0BX4J7Z4S -1/12/2025", "Sales": 59.95, "Sales (new to brand)": 59.95, "Purchases": 1, "Purchases (new to brand)": 1.0, "Units sold (new to brand)": 1.0, "ntb_share": 100.0}, {"Campaign name": "SP - PATA (Beam Dream) - KillSwitch - B0BX4J7Z4S - 8/4/25", "Sales": 119.9, "Sales (new to brand)": 0.0, "Purchases": 2, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP-Exact-[Hot Chocolate LSV Kw]-Switch Supplements-B0BX4J7Z4S - Nov 13, 2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - Exact [moonbrew KWs] -Switch Supplement - B0BX4J7Z4S - 23/7/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Phrase/BMM - Brand KWs - High bid -  KillSwitch - B0BX4J7Z4S - Old", "Sales": 899.25, "Sales (new to brand)": 0.0, "Purchases": 15, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Exact - Brand KWs  - KillSwitch - B0BX4J7Z4S - May 28, 2025", "Sales": 716.4, "Sales (new to brand)": 0.0, "Purchases": 12, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP [Exact - Moonbrew KWs] - KillSwitch - B0BX4J7Z4S (Ranking) - 15/04/2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP-PAT-(Herbal & Nutritional Sleep Supplements) - KillSwitch - B0BX4J7Z4S - Old", "Sales": 119.9, "Sales (new to brand)": 0.0, "Purchases": 2, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - BMM-Up&Down (beam dream KWs) - Switch Supplements - B0BX4J7Z4S - 16/06/2025", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Broad 1 - Roots - KillSwitch - B0BX4J7Z4S - 8/4/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - Magnesium Exact Kw -Switch Supplement - B0BX4J7Z4S - May 20, 2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV -PAT-(Herbal & Nutritional Sleep Supplements) - KillSwitch - B0BX4J7Z4S - 12/06/2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Phrase - [moonbrew Competitor KWs] - KillSwitch - B0BX4J7Z4S - 14/4/25", "Sales": 179.85, "Sales (new to brand)": 0.0, "Purchases": 3, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Auto - Substitiute -  KillSwitch - B0BX4J7Z4S - Old", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP [Exact- beam dream sleep powder] - KillSwitch - B0BX4J7Z4S (Ranking) - 15/04/2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP [Exact - Ryze KWs] - KillSwitch - B0BX4J7Z4S (Ranking) - May 21, 2025", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SB - BMM - Brand KWs - Product Collection -  KillSwitch - B0BX4J7Z4S - Old", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "[SBV-PATA-DEF] - Sleep Aid for Adults - B0BX4J7Z4S - Kill Switch - 09/03/26", "Sales": 119.9, "Sales (new to brand)": 119.9, "Purchases": 2, "Purchases (new to brand)": 2.0, "Units sold (new to brand)": 2.0, "ntb_share": 100.0}, {"Campaign name": "SP - BMM - [Sleep Drink KWs] - KillSwitch - B0BX4J7Z4S -  1/8/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - SKW Exact (agz sleep drink) - Switch Supplements - B0BX4J7Z4S - Oct 24,2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Phrase - SKW - Sleep Aid -  KillSwitch - B0BX4J7Z4S - Old", "Sales": 119.9, "Sales (new to brand)": 0.0, "Purchases": 2, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - PATA - All ASINs - KillSwitch - B0BX4J7Z4S", "Sales": 119.9, "Sales (new to brand)": 0.0, "Purchases": 2, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Phrase - [Beam dream Competitor KWs] - KillSwitch - B0BX4J7Z4S - 14/4/25", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - BMM - Catch All - Relevant KWs -  KillSwitch - B0BX4J7Z4S - Old", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - SKW BMM (ryze cocoa - competitor) - Switch Supplements - B0BX4J7Z4S - 16/06/2025", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "[SBV-Storefront] - Sleep Aid for Adults  - Kill Switch - 09/03/26", "Sales": 1199.0, "Sales (new to brand)": 1139.05, "Purchases": 20, "Purchases (new to brand)": 19.0, "Units sold (new to brand)": 19.0, "ntb_share": 95.0}, {"Campaign name": "SP - Exact - Ranking - SKW - Sleep Aid  - KillSwitch - B0BX4J7Z4S - 14/4/25", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP-SKW(Sleep Cocoa) - Phrase - Switch Supplement - B0BX4J7Z4S - Oct 30,2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP-Phrase-[Catch all U&D Test]-Kill Switch-B0BX4J7Z4S-Dec 4 2025", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Exact -Ranking - 4 CoCoa KWs LSV - KillSwitch - B0BX4J7Z4S - 7/4/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Exact - (sleeping aid, nighttime superfoods hot cocoa ) 500+ SV - B0BX4J7Z4S", "Sales": 179.85, "Sales (new to brand)": 0.0, "Purchases": 3, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - SKW Exact (sleep aids for adults) - Switch Supplements - B0BX4J7Z4S - May 22, 2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP-Phrase-[magnesium KWs]-Kill Switch-B0BX4J7Z4S-May 01, 2025", "Sales": 119.9, "Sales (new to brand)": 0.0, "Purchases": 2, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - DEF [Expanded-Up&Down] - Switch Supplements - B0BX4J7Z4S - 7/08/2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - BMM - SKW (sleep powder) - KillSwitch - B0BX4J7Z4S-17/6/25", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - PATA - Switch Supplement - B0BX4J7Z4S  - May 22, 2025", "Sales": 119.9, "Sales (new to brand)": 119.9, "Purchases": 2, "Purchases (new to brand)": 2.0, "Units sold (new to brand)": 2.0, "ntb_share": 100.0}, {"Campaign name": "SP - [SQP KWs] Exact - Switch Supplements - B0BX4J7Z4S - 04/8/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - PATA 5 - Low bid  - [Semi relevant ASINs] - Switch Supplement - B0BX4J7Z4S - 24/6/25", "Sales": 419.65, "Sales (new to brand)": 299.75, "Purchases": 7, "Purchases (new to brand)": 5.0, "Units sold (new to brand)": 5.0, "ntb_share": 71.43}, {"Campaign name": "SBV - BMM [beam dream KWs] - KillSwitch - B0BX4J7Z4S - 28/7/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Auto(Up&Down) - Close -  KillSwitch - B0BX4J7Z4S - 18/6/25", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - PATA - Expanded - KillSwitch - B0BX4J7Z4S - Old", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - PATA  - Defensive - Switch Supplement - B0BX4J7Z4S  - 25/8/25", "Sales": 119.9, "Sales (new to brand)": 119.9, "Purchases": 2, "Purchases (new to brand)": 2.0, "Units sold (new to brand)": 2.0, "ntb_share": 100.0}, {"Campaign name": "SP -Catch All - Broad - KillSwitch - B0BX4J7Z4S - Oct 22, 2025-Low  Bid", "Sales": 119.9, "Sales (new to brand)": 0.0, "Purchases": 2, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "[SBV-PATC] - Sleep Aid for Adults - B0BX4J7Z4S - Kill Switch - 16.03.26", "Sales": 59.95, "Sales (new to brand)": 59.95, "Purchases": 1, "Purchases (new to brand)": 1.0, "Units sold (new to brand)": 1.0, "ntb_share": 100.0}, {"Campaign name": "SP - Auto - Catch all- Low Bid -  KillSwitch - B0BX4J7Z4S - 24/7/25", "Sales": 176.85, "Sales (new to brand)": 0.0, "Purchases": 3, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP -  Exact - Ranking - Brand KWs (8) - KillSwitch - B0BX4J7Z4S - Old", "Sales": 4721.05, "Sales (new to brand)": 0.0, "Purchases": 76, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - PATA - 4 - KillSwitch - B0BX4J7Z4S - May 01, 2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - PATA (ryze) - Kill Switch - B0BX4J7Z4S - May 21, 2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "Testing - SP [E+P+B - SKW-Moonbrew] - KillSwitch - B0BX4J7Z4S - 24/12/2025", "Sales": 239.8, "Sales (new to brand)": 0.0, "Purchases": 4, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - Phrase - [moonbrew, moon brew]  - KillSwitch - B0BX4J7Z4S - 18/7/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SBV - Exact KW (sleep hot chocolate, cocoa sleep aid) - B0BX4J7Z4S - Switch Supplements - May 05, 2025", "Sales": 419.65, "Sales (new to brand)": 299.75, "Purchases": 7, "Purchases (new to brand)": 5.0, "Units sold (new to brand)": 5.0, "ntb_share": 71.43}, {"Campaign name": "SP - Auto - Loose -  KillSwitch - B0BX4J7Z4S - 18/6/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - KWs related to your brand - Sleep Aid  - KillSwitch - B0BX4J7Z4S - 26/6/25", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - Broad  - Roots 2 - KillSwitch - B0BX4J7Z4S - May 22, 2025", "Sales": 0.0, "Sales (new to brand)": 0.0, "Purchases": 0, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}, {"Campaign name": "SP - BMM - SKW (sleep aid) - KillSwitch - B0BX4J7Z4S - Apr 07, 2025", "Sales": 59.95, "Sales (new to brand)": 0.0, "Purchases": 1, "Purchases (new to brand)": 0.0, "Units sold (new to brand)": 0.0, "ntb_share": 0.0}], "sns": [{"Reporting Period Start": "2026-05-01", "Reporting Period End": "2026-05-31", "ASIN": "B0BX4J7Z4S", "SKU": "101PWD01002", "Product name": "SWITCH Killswitch Sleep Aid for Adults \u2013 Fall Asleep Fast & Wake Refreshed, Sugar-Free Hot Chocolate Supplement - Magnesium, Tart Cherry, L-Theanine & More for Restful Sleep, 30 Servings, Made in USA", "Fulfilled by": "Amazon", "Category": "Nutrition & Wellness", "Brand": "SWITCH", "currency": "USD", "Seller Funding %": 10.0, "Period End Subscription Balance": 601.0, "SnS shipped units": 255.5, "SnS Sales": 15317.33, "SnS Sales Penetration %": 0.3977, "Not delivered due to OOS %": 0.0, "Lost Sales due to OOS": 0.0, "Share of coupon driven Subscriptions": 0.1273, "Coupon Sales Penetration": 0.0196}]};
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+/** Format a number as USD currency string */
+function fmt$(v) {
+  if (v == null || isNaN(v)) return '$0.00';
+  return '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/** Format a number as a percentage string */
+function fmtPct(v, decimals = 1) {
+  if (v == null || isNaN(v)) return '0.0%';
+  return Number(v).toFixed(decimals) + '%';
+}
+
+/** Format a plain number */
+function fmtNum(v) {
+  if (v == null || isNaN(v)) return '0';
+  return Number(v).toLocaleString('en-US', { maximumFractionDigits: 1 });
+}
+
+/** Chart.js default plugin options for dark theme */
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      labels: { color: '#94a3b8', font: { size: 12 }, boxWidth: 14 }
+    },
+    tooltip: {
+      backgroundColor: '#1e293b',
+      borderColor: '#334155',
+      borderWidth: 1,
+      titleColor: '#f1f5f9',
+      bodyColor: '#94a3b8',
+      padding: 10,
+    }
+  },
+  scales: {
+    x: {
+      ticks: { color: '#94a3b8', font: { size: 11 } },
+      grid:  { color: 'rgba(51,65,85,0.5)' }
+    },
+    y: {
+      ticks: { color: '#94a3b8', font: { size: 11 } },
+      grid:  { color: 'rgba(51,65,85,0.5)' }
+    }
+  }
+};
+
+/** Shorten long campaign names for Y-axis labels */
+function shortName(name, max = 36) {
+  if (name.length <= max) return name;
+  // Try to grab a key descriptor from the name
+  const m = name.match(/\[(.*?)\]/);
+  if (m) return m[1].substring(0, max);
+  return name.substring(0, max) + '…';
+}
+
+/**
+ * Build tooltip callbacks that show the FULL campaign name in the title
+ * plus a formatted value in the body.
+ * @param {string[]} fullNames  — parallel array of full names, same order as chart labels
+ * @param {function} valueFmt   — formats ctx.raw into a display string
+ */
+function fullNameTooltip(fullNames, valueFmt) {
+  return {
+    callbacks: {
+      title: (items) => {
+        const idx = items[0]?.dataIndex;
+        return fullNames[idx] ?? items[0]?.label ?? '';
+      },
+      label: (ctx) => '  ' + valueFmt(ctx.raw)
+    }
+  };
+}
+
+/** Download a chart canvas as PNG */
+function downloadChart(canvasId, filename) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = filename + '.png';
+  a.click();
+}
+
+/** Export a table to CSV */
+function exportCSV(tableId, filename) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const rows = [];
+  // headers
+  const ths = table.querySelectorAll('thead th');
+  rows.push(Array.from(ths).map(th => '"' + th.innerText.replace(/[↕↑↓]/g,'').trim() + '"').join(','));
+  // body
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    const cols = tr.querySelectorAll('td');
+    rows.push(Array.from(cols).map(td => '"' + td.innerText.trim() + '"').join(','));
+  });
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename + '.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AGGREGATION
+// ═══════════════════════════════════════════════════════════════
+
+function aggregateNTB(data) {
+  return data.reduce((acc, r) => {
+    acc.totalSales   += r['Sales'] || 0;
+    acc.totalNTB     += r['Sales (new to brand)'] || 0;
+    acc.totalOrders  += r['Purchases'] || 0;
+    acc.totalNTBOrd  += r['Purchases (new to brand)'] || 0;
+    acc.totalNTBUnits+= r['Units sold (new to brand)'] || 0;
+    return acc;
+  }, { totalSales:0, totalNTB:0, totalOrders:0, totalNTBOrd:0, totalNTBUnits:0 });
+}
+
+function aggregateSnS(data) {
+  return data.reduce((acc, r) => {
+    acc.sales   += r['SnS Sales'] || 0;
+    acc.units   += r['SnS shipped units'] || 0;
+    acc.balance += r['Period End Subscription Balance'] || 0;
+    acc.pen     += (r['SnS Sales Penetration %'] || 0) * 100;
+    acc.oosLoss += r['Lost Sales due to OOS'] || 0;
+    acc.oosPct  += (r['Not delivered due to OOS %'] || 0) * 100;
+    acc.count++;
+    return acc;
+  }, { sales:0, units:0, balance:0, pen:0, oosLoss:0, oosPct:0, count:0 });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KPI CARD BUILDER
+// ═══════════════════════════════════════════════════════════════
+
+function buildKPICard(label, value, sub, color) {
+  return `<div class="kpi-card ${color}">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-sub">${sub}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHART REGISTRY  (to prevent duplicate registrations)
+// ═══════════════════════════════════════════════════════════════
+const CHARTS = {};
+function destroyChart(id) {
+  if (CHARTS[id]) { CHARTS[id].destroy(); delete CHARTS[id]; }
+}
+function newChart(id, config) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  CHARTS[id] = new Chart(ctx, config);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PALETTE
+// ═══════════════════════════════════════════════════════════════
+const PALETTE = [
+  '#6366f1','#22d3ee','#10b981','#f59e0b','#ef4444',
+  '#a78bfa','#34d399','#fb923c','#38bdf8','#f472b6'
+];
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER — OVERVIEW TAB
+// ═══════════════════════════════════════════════════════════════
+
+function renderOverview() {
+  const sns  = aggregateSnS(RAW.sns);
+  const ntb  = aggregateNTB(RAW.ntb);
+  const ntbShare = ntb.totalSales > 0 ? (ntb.totalNTB / ntb.totalSales * 100) : 0;
+
+  // SnS KPI cards
+  document.getElementById('kpi-sns').innerHTML = [
+    buildKPICard('SnS Sales', fmt$(sns.sales), 'Total May 2026 revenue via subscription', 'green'),
+    buildKPICard('Units Shipped', fmtNum(sns.units), 'Subscribe & Save shipped units', 'cyan'),
+    buildKPICard('Subscription Balance', fmtNum(sns.balance), 'Active subscriptions at period end', 'indigo'),
+    buildKPICard('SnS Penetration', fmtPct(sns.pen / Math.max(sns.count,1)), 'Avg % of total sales via SnS', 'orange'),
+  ].join('');
+
+  // NTB KPI cards
+  document.getElementById('kpi-ntb').innerHTML = [
+    buildKPICard('Total Ad Sales', fmt$(ntb.totalSales), `${ntb.totalOrders} total purchases`, 'indigo'),
+    buildKPICard('NTB Sales', fmt$(ntb.totalNTB), 'Revenue from new-to-brand customers', 'cyan'),
+    buildKPICard('NTB Share', fmtPct(ntbShare), 'NTB as % of total ad sales', 'green'),
+    buildKPICard('NTB Orders', fmtNum(ntb.totalNTBOrd), `${fmtNum(ntb.totalNTBUnits)} NTB units sold`, 'orange'),
+  ].join('');
+
+  // Executive insights
+  const top5ntb = [...RAW.ntb].sort((a,b) => b['Sales (new to brand)'] - a['Sales (new to brand)']).slice(0,1)[0];
+  document.getElementById('insights-grid').innerHTML = [
+    `<div class="insight-card"><div class="insight-icon">📈</div><div class="insight-text"><strong>${fmtPct(ntbShare)}</strong> of total ad sales in May came from <strong>new-to-brand customers</strong>, indicating healthy top-of-funnel reach.</div></div>`,
+    `<div class="insight-card"><div class="insight-icon">🏆</div><div class="insight-text">Highest NTB campaign — <strong>"${shortName(top5ntb['Campaign name'],50)}"</strong> — generated <strong>${fmt$(top5ntb['Sales (new to brand)'])}</strong> in new customer revenue.</div></div>`,
+    `<div class="insight-card"><div class="insight-icon">🔄</div><div class="insight-text">SWITCH Killswitch holds a <strong>SnS penetration rate of ${fmtPct(sns.pen/Math.max(sns.count,1))}</strong> — nearly 2 in 5 total sales are through subscription.</div></div>`,
+    `<div class="insight-card"><div class="insight-icon">📦</div><div class="insight-text"><strong>601 active subscriptions</strong> at period end with zero OOS-related cancellations, signaling strong inventory health in May.</div></div>`,
+    `<div class="insight-card"><div class="insight-icon">💰</div><div class="insight-text">SnS generated <strong>${fmt$(sns.sales)}</strong> in subscription revenue — <strong>${fmtPct(sns.sales / (sns.sales + ntb.totalSales) * 100)}</strong> of combined SnS + Ad Sales.</div></div>`,
+    `<div class="insight-card"><div class="insight-icon">🎯</div><div class="insight-text">SBV (Sponsored Brands Video) campaigns drove the majority of NTB conversions, with storefront campaigns accounting for <strong>38.8%</strong> of all NTB revenue.</div></div>`,
+  ].join('');
+
+  // Overview mini-donut: NTB vs existing
+  newChart('chart-overview-donut', {
+    type: 'doughnut',
+    data: {
+      labels: ['NTB Sales', 'Existing Customer Sales'],
+      datasets: [{ data: [ntb.totalNTB, ntb.totalSales - ntb.totalNTB], backgroundColor: ['#6366f1','#22d3ee'], borderWidth: 2, borderColor: '#1e293b' }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      cutout: '68%',
+      scales: {},
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: { ...CHART_DEFAULTS.plugins.tooltip, callbacks: { label: ctx => ` ${ctx.label}: ${fmt$(ctx.raw)} (${fmtPct(ctx.raw/ntb.totalSales*100)})` } }
+      }
+    }
+  });
+
+  // Overview mini-bar: top 5 NTB campaigns
+  const top5 = [...RAW.ntb].sort((a,b) => b['Sales (new to brand)'] - a['Sales (new to brand)']).slice(0,5);
+  const top5FullNames = top5.map(r => r['Campaign name']);
+  newChart('chart-overview-bar', {
+    type: 'bar',
+    data: {
+      labels: top5.map(r => shortName(r['Campaign name'], 28)),
+      datasets: [{
+        label: 'NTB Sales ($)',
+        data: top5.map(r => r['Sales (new to brand)']),
+        backgroundColor: PALETTE.slice(0,5),
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      indexAxis: 'y',
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { display: false },
+        tooltip: { ...CHART_DEFAULTS.plugins.tooltip, ...fullNameTooltip(top5FullNames, v => fmt$(v)) }
+      },
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => '$' + v } },
+        y: { ...CHART_DEFAULTS.scales.y }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER — SnS TAB
+// ═══════════════════════════════════════════════════════════════
+
+function renderSnS() {
+  const sns = aggregateSnS(RAW.sns);
+
+  // KPI cards
+  document.getElementById('kpi-sns2').innerHTML = [
+    buildKPICard('SnS Sales', fmt$(sns.sales), 'May 1–31, 2026', 'green'),
+    buildKPICard('Units Shipped', fmtNum(sns.units), 'SnS fulfilled units', 'cyan'),
+    buildKPICard('Subscription Balance', fmtNum(sns.balance), 'Active subs at end of period', 'indigo'),
+    buildKPICard('Avg Penetration %', fmtPct(sns.pen / Math.max(sns.count,1)), 'SnS share of total sales', 'orange'),
+  ].join('');
+
+  // Chart — SnS penetration gauge-style bar
+  newChart('chart-sns-pen', {
+    type: 'bar',
+    data: {
+      labels: RAW.sns.map(r => r['ASIN']),
+      datasets: [{
+        label: 'SnS Penetration %',
+        data: RAW.sns.map(r => +(r['SnS Sales Penetration %'] * 100).toFixed(2)),
+        backgroundColor: '#10b981', borderRadius: 6,
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false } },
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x },
+        y: { ...CHART_DEFAULTS.scales.y, max: 100, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v + '%' } }
+      }
+    }
+  });
+
+  // Chart — Subscription Balance
+  newChart('chart-sns-bal', {
+    type: 'doughnut',
+    data: {
+      labels: RAW.sns.map(r => r['ASIN']),
+      datasets: [{ data: RAW.sns.map(r => r['Period End Subscription Balance']), backgroundColor: ['#6366f1'], borderWidth: 2, borderColor: '#1e293b' }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      cutout: '70%',
+      scales: {},
+      plugins: { ...CHART_DEFAULTS.plugins, legend: { display: true }, tooltip: { ...CHART_DEFAULTS.plugins.tooltip, callbacks: { label: ctx => ` ${ctx.label}: ${fmtNum(ctx.raw)} active subs` } } }
+    }
+  });
+
+  // Chart — OOS Analysis
+  newChart('chart-sns-oos', {
+    type: 'bar',
+    data: {
+      labels: RAW.sns.map(r => r['ASIN']),
+      datasets: [
+        { label: 'Lost Sales due to OOS ($)', data: RAW.sns.map(r => r['Lost Sales due to OOS']), backgroundColor: '#ef4444', borderRadius: 6 },
+        { label: 'Not Delivered OOS %', data: RAW.sns.map(r => +(r['Not delivered due to OOS %'] * 100).toFixed(2)), backgroundColor: '#f59e0b', borderRadius: 6 }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 } },
+        tooltip: { ...CHART_DEFAULTS.plugins.tooltip, callbacks: { label: ctx => ctx.datasetIndex === 0 ? ` ${fmt$(ctx.raw)}` : ` ${fmtPct(ctx.raw)}` } }
+      }
+    }
+  });
+
+  // Chart — Coupon contribution
+  const r0 = RAW.sns[0];
+  const couponShare = +(r0['Share of coupon driven Subscriptions'] * 100).toFixed(2);
+  const nonCoupon   = +(100 - couponShare).toFixed(2);
+  newChart('chart-sns-coupon', {
+    type: 'doughnut',
+    data: {
+      labels: ['Coupon Driven', 'Organic Subs'],
+      datasets: [{ data: [couponShare, nonCoupon], backgroundColor: ['#f59e0b','#6366f1'], borderWidth: 2, borderColor: '#1e293b' }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      cutout: '68%',
+      scales: {},
+      plugins: { ...CHART_DEFAULTS.plugins, tooltip: { ...CHART_DEFAULTS.plugins.tooltip, callbacks: { label: ctx => ` ${ctx.label}: ${fmtPct(ctx.raw)}` } } }
+    }
+  });
+
+  // Table
+  renderSnSTable();
+}
+
+// ── SnS Table ──────────────────────────────
+let snsPagState = { page: 1, perPage: 20, data: [] };
+
+function renderSnSTable() {
+  snsPagState.data = RAW.sns;
+  renderSnSPage();
+}
+
+function renderSnSPage() {
+  const { data, page, perPage } = snsPagState;
+  const start = (page - 1) * perPage;
+  const slice = data.slice(start, start + perPage);
+  const tbody = document.getElementById('sns-tbody');
+  tbody.innerHTML = slice.map(r => `
+    <tr>
+      <td class="muted">${r['ASIN']}</td>
+      <td class="muted">${r['SKU']}</td>
+      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Product name']}">${r['Product name']}</td>
+      <td>${r['Brand']}</td>
+      <td class="num green">${fmt$(r['SnS Sales'])}</td>
+      <td class="num">${fmtNum(r['SnS shipped units'])}</td>
+      <td class="num">${fmtNum(r['Period End Subscription Balance'])}</td>
+      <td class="num">${fmtPct(r['SnS Sales Penetration %'] * 100)}</td>
+      <td class="num">${fmt$(r['Lost Sales due to OOS'])}</td>
+      <td class="num">${fmtPct(r['Not delivered due to OOS %'] * 100)}</td>
+    </tr>`).join('');
+  document.getElementById('sns-pag-info').textContent = `Showing ${start+1}–${Math.min(start+perPage, data.length)} of ${data.length}`;
+  document.getElementById('sns-prev').disabled = page <= 1;
+  document.getElementById('sns-next').disabled = start + perPage >= data.length;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER — NTB TAB
+// ═══════════════════════════════════════════════════════════════
+
+function renderNTB() {
+  const ntb = aggregateNTB(RAW.ntb);
+  const ntbShare = ntb.totalSales > 0 ? (ntb.totalNTB / ntb.totalSales * 100) : 0;
+
+  // KPI cards
+  document.getElementById('kpi-ntb2').innerHTML = [
+    buildKPICard('Total Ad Sales', fmt$(ntb.totalSales), `${ntb.totalOrders} total purchases`, 'indigo'),
+    buildKPICard('NTB Sales', fmt$(ntb.totalNTB), 'Revenue from new customers', 'cyan'),
+    buildKPICard('NTB Share', fmtPct(ntbShare), '% of ad sales from NTB', 'green'),
+    buildKPICard('NTB Orders', fmtNum(ntb.totalNTBOrd), `${fmtNum(ntb.totalNTBUnits)} units sold to new buyers`, 'orange'),
+  ].join('');
+
+  // Top 10 campaigns by NTB Sales
+  const top10 = [...RAW.ntb].sort((a,b) => b['Sales (new to brand)'] - a['Sales (new to brand)']).slice(0,10);
+  const top10FullNames = top10.map(r => r['Campaign name']);
+
+  newChart('chart-ntb-top', {
+    type: 'bar',
+    data: {
+      labels: top10.map(r => shortName(r['Campaign name'], 32)),
+      datasets: [{ label: 'NTB Sales ($)', data: top10.map(r => r['Sales (new to brand)']), backgroundColor: PALETTE, borderRadius: 6 }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      indexAxis: 'y',
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { display: false },
+        tooltip: { ...CHART_DEFAULTS.plugins.tooltip, ...fullNameTooltip(top10FullNames, v => fmt$(v)) }
+      },
+      scales: { x: { ...CHART_DEFAULTS.scales.x, ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => '$'+v } }, y: { ...CHART_DEFAULTS.scales.y } }
+    }
+  });
+
+  // NTB Share % top 10 by NTB share (among campaigns with sales)
+  const top10share = [...RAW.ntb].filter(r => r['Sales'] > 0).sort((a,b) => b['ntb_share'] - a['ntb_share']).slice(0,10);
+  const top10shareFullNames = top10share.map(r => r['Campaign name']);
+  newChart('chart-ntb-share', {
+    type: 'bar',
+    data: {
+      labels: top10share.map(r => shortName(r['Campaign name'], 32)),
+      datasets: [{ label: 'NTB Share %', data: top10share.map(r => r['ntb_share']), backgroundColor: PALETTE.map(c => c + 'cc'), borderRadius: 6 }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      indexAxis: 'y',
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { display: false },
+        tooltip: { ...CHART_DEFAULTS.plugins.tooltip, ...fullNameTooltip(top10shareFullNames, v => fmtPct(v)) }
+      },
+      scales: { x: { ...CHART_DEFAULTS.scales.x, max: 110, ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => v + '%' } }, y: { ...CHART_DEFAULTS.scales.y } }
+    }
+  });
+
+  // Ad Sales vs NTB Sales — grouped bar top 10 by Ad Sales
+  const top10ads = [...RAW.ntb].sort((a,b) => b['Sales'] - a['Sales']).slice(0,10);
+  const top10adsFullNames = top10ads.map(r => r['Campaign name']);
+  newChart('chart-ntb-grouped', {
+    type: 'bar',
+    data: {
+      labels: top10ads.map(r => shortName(r['Campaign name'], 22)),
+      datasets: [
+        { label: 'Ad Sales ($)', data: top10ads.map(r => r['Sales']), backgroundColor: '#6366f1cc', borderRadius: 4 },
+        { label: 'NTB Sales ($)', data: top10ads.map(r => r['Sales (new to brand)']), backgroundColor: '#22d3eecc', borderRadius: 4 }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: {
+            title: (items) => top10adsFullNames[items[0]?.dataIndex] ?? items[0]?.label ?? '',
+            label: (ctx) => `  ${ctx.dataset.label}: ${fmt$(ctx.raw)}`
+          }
+        }
+      },
+      scales: { x: { ...CHART_DEFAULTS.scales.x, ticks: { ...CHART_DEFAULTS.scales.x.ticks, maxRotation: 45 } }, y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => '$'+v } } }
+    }
+  });
+
+  // NTB Contribution pie — top 5 by NTB, rest = "Others"
+  const t5 = [...RAW.ntb].filter(r => r['Sales (new to brand)'] > 0).sort((a,b) => b['Sales (new to brand)'] - a['Sales (new to brand)']).slice(0,5);
+  const otherNTB = ntb.totalNTB - t5.reduce((s,r) => s + r['Sales (new to brand)'], 0);
+  const pieFullNames = [...t5.map(r => r['Campaign name']), 'All Others'];
+  const pieLabels   = [...t5.map(r => shortName(r['Campaign name'], 30)), 'All Others'];
+  const pieData     = [...t5.map(r => r['Sales (new to brand)']), otherNTB];
+  newChart('chart-ntb-pie', {
+    type: 'pie',
+    data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: [...PALETTE.slice(0,5), '#475569'], borderColor: '#1e293b', borderWidth: 2 }] },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {},
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: {
+            title: (items) => pieFullNames[items[0]?.dataIndex] ?? '',
+            label: (ctx) => `  ${fmt$(ctx.raw)} (${fmtPct(ctx.raw/ntb.totalNTB*100)})`
+          }
+        }
+      }
+    }
+  });
+
+  // NTB Table (all campaigns sorted by NTB sales)
+  ntbPagState.data = [...RAW.ntb].sort((a,b) => b['Sales (new to brand)'] - a['Sales (new to brand)']);
+  renderNTBPage();
+}
+
+// ── NTB Table pagination & filter ──────────────────────────────
+let ntbPagState = { page: 1, perPage: 15, data: [], filtered: [] };
+
+function filterNTB() {
+  const q = document.getElementById('ntb-search').value.toLowerCase();
+  ntbPagState.filtered = ntbPagState.data.filter(r => r['Campaign name'].toLowerCase().includes(q));
+  ntbPagState.page = 1;
+  renderNTBPage();
+}
+
+function renderNTBPage() {
+  const src  = ntbPagState.filtered.length ? ntbPagState.filtered : ntbPagState.data;
+  const { page, perPage } = ntbPagState;
+  const start = (page - 1) * perPage;
+  const slice = src.slice(start, start + perPage);
+  const tbody = document.getElementById('ntb-tbody');
+  tbody.innerHTML = slice.map(r => {
+    const shareColor = r['ntb_share'] >= 75 ? 'color:#6ee7b7' : r['ntb_share'] >= 30 ? 'color:#fcd34d' : 'color:#f87171';
+    return `<tr>
+      <td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Campaign name']}">${r['Campaign name']}</td>
+      <td class="num">${fmt$(r['Sales'])}</td>
+      <td class="num green">${fmt$(r['Sales (new to brand)'])}</td>
+      <td class="num">${fmtNum(r['Purchases'])}</td>
+      <td class="num">${fmtNum(r['Purchases (new to brand)'])}</td>
+      <td class="num">${fmtNum(r['Units sold (new to brand)'])}</td>
+      <td class="num" style="${shareColor}">${fmtPct(r['ntb_share'])}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('ntb-pag-info').textContent = `Showing ${start+1}–${Math.min(start+perPage, src.length)} of ${src.length}`;
+  document.getElementById('ntb-prev').disabled = page <= 1;
+  document.getElementById('ntb-next').disabled = start + perPage >= src.length;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGINATION
+// ═══════════════════════════════════════════════════════════════
+
+function paginate(which, dir) {
+  if (which === 'sns') {
+    snsPagState.page += dir;
+    renderSnSPage();
+  } else if (which === 'ntb') {
+    ntbPagState.page += dir;
+    renderNTBPage();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE SORT (client-side)
+// ═══════════════════════════════════════════════════════════════
+
+const sortState = {};
+
+function sortTable(tableId, colIdx) {
+  const table = document.getElementById(tableId);
+  const tbody = table.querySelector('tbody');
+  const rows  = Array.from(tbody.querySelectorAll('tr'));
+  const key   = tableId + '_' + colIdx;
+  sortState[key] = sortState[key] === 'asc' ? 'desc' : 'asc';
+  const asc = sortState[key] === 'asc';
+
+  rows.sort((a, b) => {
+    const av = a.cells[colIdx]?.innerText.trim().replace(/[$,%]/g, '') || '';
+    const bv = b.cells[colIdx]?.innerText.trim().replace(/[$,%]/g, '') || '';
+    const an = parseFloat(av), bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+    return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+
+  // Update arrow indicators
+  table.querySelectorAll('.sort-arrow').forEach((el, i) => {
+    el.textContent = '↕'; el.className = 'sort-arrow';
+    if (i === colIdx) { el.textContent = asc ? '↑' : '↓'; el.classList.add('active'); }
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════════
+
+const tabRendered = {};
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+
+    // Toggle active state
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+
+    // Lazy render each tab once
+    if (!tabRendered[tab]) {
+      if (tab === 'sns')  renderSnS();
+      if (tab === 'ntb')  renderNTB();
+      tabRendered[tab] = true;
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+window.addEventListener('DOMContentLoaded', () => {
+  tabRendered['overview'] = true;
+  renderOverview();
+});
+</script>
+</body>
+</html>
